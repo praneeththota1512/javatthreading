@@ -1,0 +1,40 @@
+mport java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+public class SearchTask implements Callable<Boolean> {
+    private final ConcurrentLinkedQueue<File> fileQueue;
+    private final String keyword;
+
+    public SearchTask(ConcurrentLinkedQueue<File> fileQueue, String keyword) {
+        this.fileQueue = fileQueue;
+        this.keyword = keyword;
+    }
+
+    @Override
+    public Boolean call() {
+        File file;
+        while ((file = fileQueue.poll()) != null) {
+            if (searchInFile(file)) {
+                System.out.println("Keyword found in file: " + file.getAbsolutePath());
+            }
+        }
+        return true;
+    }
+
+    private boolean searchInFile(File file) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(keyword)) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+}
